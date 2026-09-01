@@ -3,23 +3,32 @@ const AXIS_THRESHOLD = 0.35;
 type MappedKey = {
   key: string;
   code: string;
+  keyCode: number;
 };
 
-const LEFT = { key: "ArrowLeft", code: "ArrowLeft" };
-const RIGHT = { key: "ArrowRight", code: "ArrowRight" };
-const JUMP = { key: "ArrowUp", code: "ArrowUp" };
-const FIRE = { key: " ", code: "Space" };
-const PAUSE = { key: "Escape", code: "Escape" };
+const LEFT = { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 };
+const RIGHT = { key: "ArrowRight", code: "ArrowRight", keyCode: 39 };
+const JUMP = { key: "ArrowUp", code: "ArrowUp", keyCode: 38 };
+const FIRE = { key: " ", code: "Space", keyCode: 32 };
+const PAUSE = { key: "Escape", code: "Escape", keyCode: 27 };
 
 export class GamepadKeyboardBridge {
   private animationFrame = 0;
   private readonly activeCodes = new Set<string>();
+  private focused = document.hasFocus();
 
   public start(): void {
+    window.addEventListener("blur", this.handleBlur);
+    window.addEventListener("focus", this.handleFocus);
     this.animationFrame = requestAnimationFrame(this.poll);
   }
 
   private readonly poll = (): void => {
+    if (!this.focused) {
+      this.animationFrame = requestAnimationFrame(this.poll);
+      return;
+    }
+
     const gamepad = navigator.getGamepads?.().find((pad) => pad !== null);
     const horizontal = gamepad?.axes[0] ?? 0;
 
@@ -41,10 +50,25 @@ export class GamepadKeyboardBridge {
       this.activeCodes.delete(mappedKey.code);
     }
 
-    window.dispatchEvent(new KeyboardEvent(pressed ? "keydown" : "keyup", {
+    const event = new KeyboardEvent(pressed ? "keydown" : "keyup", {
       key: mappedKey.key,
       code: mappedKey.code,
       bubbles: true
-    }));
+    });
+    Object.defineProperty(event, "keyCode", { value: mappedKey.keyCode });
+    Object.defineProperty(event, "which", { value: mappedKey.keyCode });
+    window.dispatchEvent(event);
   }
+
+  private readonly handleBlur = (): void => {
+    this.focused = false;
+    for (const code of [...this.activeCodes]) {
+      const mappedKey = [LEFT, RIGHT, JUMP, FIRE, PAUSE].find((key) => key.code === code);
+      if (mappedKey) this.updateKey(mappedKey, false);
+    }
+  };
+
+  private readonly handleFocus = (): void => {
+    this.focused = true;
+  };
 }
