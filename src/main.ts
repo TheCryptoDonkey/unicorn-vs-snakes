@@ -10,6 +10,7 @@ import { WinScene } from "./scenes/WinScene";
 import { HighScoreScene } from "./scenes/HighScoreScene";
 import { NostrInfoScene } from "./scenes/NostrInfoScene";
 import { CreditsScene } from "./scenes/CreditsScene";
+import { GamepadKeyboardBridge } from "./input/GamepadKeyboardBridge";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -33,3 +34,4 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 new Phaser.Game(config);
+new GamepadKeyboardBridge().start();

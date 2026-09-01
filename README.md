@@ -29,6 +29,7 @@ The production files are generated in `dist/`. You can host that folder on:
 
 - Move with arrow keys
 - Jump with space or ArrowUp
+- Gamepad: move with the left stick or D-pad, jump with A, fire with X, and pause with Start
 - Collect at least 14 sparkles
 - Avoid snakes and keep hearts above zero
 - Reach the rainbow gate to win
